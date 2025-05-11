@@ -285,6 +285,12 @@ export default function BookmakerManager() {
         throw new Error("Bookmaker not found")
       }
 
+      // Show toast that we're refreshing
+      toast({
+        title: "Refreshing Balance",
+        description: `Attempting to refresh ${bookmaker.name} balance...`,
+      })
+
       // Call the API to refresh the balance
       const response = await fetch("/api/refresh-balances", {
         method: "POST",
@@ -337,13 +343,25 @@ export default function BookmakerManager() {
     } catch (error) {
       console.error("Error refreshing balance:", error)
 
+      // Get a more user-friendly error message
+      let errorMessage = error instanceof Error ? error.message : "Failed to refresh balance"
+
+      // Make the error message more user-friendly
+      if (errorMessage.includes("timeout")) {
+        errorMessage = "Connection timed out. The bookmaker website may be slow or unavailable."
+      } else if (errorMessage.includes("username field")) {
+        errorMessage = "Could not find the login form. The bookmaker website may have changed."
+      } else if (errorMessage.includes("navigation")) {
+        errorMessage = "Could not navigate to the bookmaker website. Please check your internet connection."
+      }
+
       // Update the bookmaker to show error status
       const errorBookmakers = linkedBookmakers.map((b) =>
         b.id === id
           ? {
               ...b,
               syncStatus: "error" as const,
-              syncError: error instanceof Error ? error.message : "Failed to refresh balance",
+              syncError: errorMessage,
             }
           : b,
       )
@@ -353,7 +371,7 @@ export default function BookmakerManager() {
 
       toast({
         title: "Error Refreshing Balance",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
+        description: errorMessage,
         variant: "destructive",
       })
     } finally {

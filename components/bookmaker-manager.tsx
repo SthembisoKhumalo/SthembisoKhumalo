@@ -140,6 +140,7 @@ export default function BookmakerManager() {
   const [isRefreshingBalances, setIsRefreshingBalances] = useState(false)
   const [refreshingBookmaker, setRefreshingBookmaker] = useState<string | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState("linked")
 
   const [newBookmaker, setNewBookmaker] = useState({
     id: "",
@@ -392,6 +393,9 @@ export default function BookmakerManager() {
         notes: "",
       })
 
+      // Switch back to the linked tab after adding
+      setActiveTab("linked")
+
       toast({
         title: "Bookmaker Added",
         description: `${bookmakerInfo.name} has been added to your accounts.`,
@@ -552,7 +556,7 @@ export default function BookmakerManager() {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="linked" className="w-full flex-1 overflow-hidden flex flex-col">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex-1 overflow-hidden flex flex-col">
           <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
             <TabsTrigger value="linked">My Accounts</TabsTrigger>
             <TabsTrigger value="add">Add New Account</TabsTrigger>
@@ -722,10 +726,12 @@ export default function BookmakerManager() {
                 <p className="text-sm text-muted-foreground mt-1 mb-4">
                   Add your bookmaker accounts to get started with arbitrage betting
                 </p>
-                <Button variant="outline">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Your First Bookmaker
-                </Button>
+                <TabsList className="mt-2">
+                  <TabsTrigger value="add" className="w-full" onClick={() => setActiveTab("add")}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Your First Bookmaker
+                  </TabsTrigger>
+                </TabsList>
               </div>
             )}
           </TabsContent>
